@@ -11,4 +11,8 @@ return {
 			require('nvim-highlight-colors').setup({})
 		end
 	},
+	{ -- Show mini icons
+		'nvim-mini/mini.icons',
+		version = false
+	},
 }
