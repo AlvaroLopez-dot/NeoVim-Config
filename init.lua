@@ -8,3 +8,5 @@ vim.opt.clipboard = "unnamedplus"
 vim.keymap.set('n', '<M-h>', ':vertical resize -2<CR>', { silent = true })
 vim.keymap.set('n', '<M-l>', ':vertical resize +2<CR>', { silent = true })
 
+-- (The old LuaSnip InsertLeave autocmd is no longer needed: the Tab fix now
+-- lives in lua/plugins/cmp.lua.)

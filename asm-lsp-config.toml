@@ -1,0 +1,10 @@
+# Copy this to ~/.config/asm-lsp/.asm-lsp.toml (global)
+# or to .asm-lsp.toml in the root of an assembly project.
+[default_config]
+assembler = "nasm"
+instruction_set = "x86-64"
+
+[opts]
+compiler = "nasm"
+diagnostics = true
+default_diagnostics = true

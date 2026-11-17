@@ -1,49 +1,44 @@
+-- Treat .asm / .nasm files as NASM (Intel syntax). .s / .S stay as GAS ("asm").
+vim.filetype.add({
+  extension = {
+    asm = "nasm",
+    nasm = "nasm",
+  },
+})
+
 return {
   {
     "williamboman/mason.nvim",
-    config = function()
-      require("mason").setup()
-    end,
+    opts = {},
   },
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = {
+      "williamboman/mason.nvim",
       "neovim/nvim-lspconfig",
-      "hrsh7th/cmp-nvim-lsp", -- Allows LSP to send autocompletion capabilities
+      "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
-      -- Get default completion capabilities from cmp_nvim_lsp
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      -- mason-lspconfig v2 removed `handlers`; servers are configured with
+      -- vim.lsp.config() and enabled automatically once installed.
+      vim.lsp.config("*", {
+        capabilities = require("cmp_nvim_lsp").default_capabilities(),
+      })
+
+      vim.lsp.config("lua_ls", {
+        settings = {
+          Lua = { diagnostics = { globals = { "vim" } } },
+        },
+      })
+
+      -- asm-lsp only attaches to "asm"/"vmasm" by default; add "nasm".
+      vim.lsp.config("asm_lsp", {
+        filetypes = { "asm", "vmasm", "nasm" },
+        root_markers = { ".asm-lsp.toml", ".git" },
+      })
 
       require("mason-lspconfig").setup({
-        -- Automatically install these language servers
-        ensure_installed = { 
-          "lua_ls", 
-          "pyright", 
-          "clangd" 
-        },
-        handlers = {
-          -- Default handler runs for every installed server
-          function(server_name)
-            require("lspconfig")[server_name].setup({
-              capabilities = capabilities,
-            })
-          end,
-
-          -- Example: Custom server override (optional)
-          ["lua_ls"] = function()
-            require("lspconfig").lua_ls.setup({
-              capabilities = capabilities,
-              settings = {
-                Lua = {
-                  diagnostics = {
-                    globals = { "vim" }, -- Recognizes global 'vim' in Neovim configs
-                  },
-                },
-              },
-            })
-          end,
-        },
+        ensure_installed = { "lua_ls", "pyright", "clangd", "asm_lsp" },
       })
 
       -- Keymaps for LSP actions
@@ -52,11 +47,10 @@ return {
       vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Go to Declaration" })
       vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "Go to Implementation" })
       vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action" })
-      -- Press 'gl' in normal mode to open line diagnostics
       vim.keymap.set("n", "gl", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
       vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename Symbol" })
-      vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
-      vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+      vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, { desc = "Previous Diagnostic" })
+      vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = "Next Diagnostic" })
     end,
   },
 }
